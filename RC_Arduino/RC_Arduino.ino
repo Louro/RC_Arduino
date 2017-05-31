@@ -5,22 +5,16 @@
 */
 
 
+#include "OLED.h"
 #include <SPI.h>
 //#include <FlexiTimer2.h>
 #include <Servo.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include "a7105.h"
-#include "a7105_tx.h"
 
-// If using software SPI (the default case):
-#define OLED_MOSI   9
-#define OLED_CLK   10
-#define OLED_DC    11
-#define OLED_CS    12
-#define OLED_RESET 13
-Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+#include "a7105.h"
+#include "a7105_tx_rx.h"
+#include "OLED.h"
+
+
 
 #define NUMFLAKES 10
 #define XPOS 0
@@ -56,8 +50,6 @@ unsigned int curchannel = 0;
 
 int flysky_init();
 void beep(unsigned char speakerPin, int frequencyInHertz, long timeInMilliseconds);
-void process_function();
-void print_info();
 void print_hex(uint8_t value);
 void print_dec(uint16_t value);
 void A7105_FrameDetected();
@@ -69,20 +61,14 @@ unsigned int scan = 1;
 Servo myservo;
 
 
-#if (SSD1306_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SSD1306.h!");
-#endif
-
-void drawLCD();
 
 void setup(void)
 {
 	Serial.begin(115200);   // debugging
+	
+	/************* OLED INIT *****************/
+	OLED_init();
 
-
-							// by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
-	display.begin(SSD1306_SWITCHCAPVCC);
-	// init done
 
 	/************** PPM READER *********/
 	//pinMode(ppm_pin, INPUT);
@@ -259,7 +245,7 @@ unsigned int servo_value = 1500;
 unsigned int servo_value_old = 1500;
 
 unsigned long loopTime = 0;
-
+unsigned long updateOLEDTime = 0;
 
 unsigned long ms = 0;
 unsigned long mics = 0;
@@ -279,14 +265,16 @@ unsigned int dir = 1;
 
 static uint8_t nunchuck_buf[6];   // array to store nunchuck data,
 
-								  // main loop - wait for flag set in interrupt routine
+u8 oled_screen = 1;
+
+// main loop - wait for flag set in interrupt routine
 void loop(void)
 {
 	RadioLink();
-	ServoOut();
-	if (micros() - loopTime >= 1500)
+	//ServoOut();
+	if (micros() - loopTime >= 1400)
 	{
-		drawLCD();
+		
 		nunchuck_get_data();
 		//nunchuck_print_data();  
 
@@ -294,6 +282,22 @@ void loop(void)
 
 		loopTime = micros();
 	}
+
+	if (micros() - updateOLEDTime >= 500000) {
+		if (((nunchuck_buf[5] >> 0) & 1) && oled_screen < 4) {
+			oled_screen++;
+		}
+		if (((nunchuck_buf[5] >> 1) & 1) && oled_screen > 1) {
+			oled_screen--;
+		}
+			
+
+		OLED_draw(oled_screen);
+
+		updateOLEDTime = micros();
+	}
+
+
 
 } // end of loop
 
@@ -472,11 +476,6 @@ void beep(unsigned char speakerPin, int frequencyInHertz, long timeInMillisecond
 
 
 
-void print_info() {
-
-
-}
-
 void print_hex(uint8_t value) {
 	Serial.print("0x");
 	if (value < 0x10)
@@ -490,114 +489,6 @@ void print_dec(uint16_t value) {
 		Serial.print('0');
 	Serial.print(value, DEC);
 }
-
-void printVertical(char * str, unsigned int x, unsigned int y);
-
-float bat_volt[6] = { 3.23,3.34,3.12,3.25,3.36,3.40 };
-float pack_info[6] = { 21.58,99.50,9.58,0.96,96.56,8.58 };
-
-#define BAR_HIGHT 9
-#define BAR_WIDTH 40
-#define BAR_X 10
-#define BAR_Y_OFFSET 11
-
-void drawLCD() {
-	float v;
-
-	v = (((float)servo_value) / 1000.0)*2.5;
-	for (int i = 0; i < 6; i++)
-		bat_volt[i] = (float)(nunchuck_buf[0]) / 50.0;
-
-	display.clearDisplay();
-
-	display.setTextSize(1);
-	display.setTextColor(WHITE);
-
-	// Draw rect bar
-	for (int x = 1, y = 0; y < BAR_Y_OFFSET * 6; x++, y = y + BAR_Y_OFFSET) {
-		display.setCursor(0, y + 1);
-		display.print(x);
-		display.drawRect(BAR_X, y, BAR_WIDTH, BAR_HIGHT, WHITE);
-	}
-
-	// Fill rect with cell voltage and display cell voltage
-	for (int x = 0, y = 0; y < BAR_Y_OFFSET * 6; x++, y = y + BAR_Y_OFFSET) {
-		display.fillRect(BAR_X, y, bar_size(bat_volt[x]), BAR_HIGHT, WHITE);
-		display.setCursor(BAR_X + BAR_WIDTH + 4, y + 1);
-		display.print(bat_volt[x]);
-		display.setCursor(BAR_X + BAR_WIDTH + 29, y + 1);
-		display.print('V');
-	}
-
-	// Draw actual current level
-	//display.drawRect(90,  0, 15, 55, WHITE);
-	//printVertical("1345mA", 95, 5);
-
-	// Draw charged left in battery
-	//display.drawRect(110,  0, 15, 55, WHITE);
-	//printVertical("9854mAh", 115, 5);
-
-
-	// Draw battery pack voltage
-	display.setCursor(90, 0);
-	display.print(v);//display.print(pack_info[0]);
-	display.setCursor(122, 0);
-	display.print("V");
-
-	// Draw current draw
-	display.setCursor(90, 11);
-	display.print(pack_info[1]);
-	display.setCursor(122, 11);
-	display.print("A");
-
-	// Draw battery pack charge left
-	display.setCursor(90, 22);
-	display.print(pack_info[2]);
-	display.setCursor(116, 22);
-	display.print("Ah");
-
-	// Draw battery pack charge used
-	display.setCursor(90, 33);
-	display.print(pack_info[3]);
-	display.setCursor(116, 33);
-	display.print("Ah");
-
-	// Draw battery pack % left
-	display.setCursor(90, 44);
-	display.print(pack_info[4]);
-	display.setCursor(122, 44);
-	display.print("%");
-
-	// Draw remote control battery pack voltage
-	display.setCursor(95, 55);
-	display.print(pack_info[5]);
-	display.setCursor(122, 55);
-	display.print("V");
-
-	display.display();
-
-}
-
-unsigned int bar_size(float bat_volt) {
-	unsigned int value = 0;
-
-	if (bat_volt > 2.5) {
-		value = (bat_volt - 2.5) * 40 / 1.7;
-	}
-
-	return value;
-}
-
-void printVertical(char * str, unsigned int x, unsigned int y) {
-	char * ptr;
-	int i;
-	ptr = str;
-	for (i = 0; *ptr != NULL; ptr++, i += 8) {
-		display.setCursor(x, y + i);
-		display.print(*ptr);
-	}
-}
-
 
 
 // initialize the I2C system, join the I2C bus,

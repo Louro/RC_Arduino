@@ -5,7 +5,16 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RC_Arduino", "RC_Arduino\RC_Arduino.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RX", "RX\RX.vcxproj", "{F6653C79-5195-43A3-90AF-A309FA835FFE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "A7105", "A7105\A7105.vcxitems", "{13E2642E-8158-45FF-99DA-DD254E914C47}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		A7105\A7105.vcxitems*{13e2642e-8158-45ff-99da-dd254e914c47}*SharedItemsImports = 9
+		A7105\A7105.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+		A7105\A7105.vcxitems*{f6653c79-5195-43a3-90af-a309fa835ffe}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
@@ -15,6 +24,10 @@ Global
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{F6653C79-5195-43A3-90AF-A309FA835FFE}.Debug|x86.ActiveCfg = Debug|Win32
+		{F6653C79-5195-43A3-90AF-A309FA835FFE}.Debug|x86.Build.0 = Debug|Win32
+		{F6653C79-5195-43A3-90AF-A309FA835FFE}.Release|x86.ActiveCfg = Release|Win32
+		{F6653C79-5195-43A3-90AF-A309FA835FFE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

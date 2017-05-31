@@ -1,5 +1,5 @@
 #include "a7105.h"
-#include "a7105_tx.h"
+#include "a7105_tx_rx.h"
 
 unsigned long id = 0x11111111;//0x00000000;//0x12345679;
 

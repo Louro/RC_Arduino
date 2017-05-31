@@ -15,19 +15,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.RC_Arduino.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OLED.h">
+    <ClInclude Include="__vm\.RX.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="RC_Arduino.ino" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="OLED.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <None Include="RX.ino" />
   </ItemGroup>
 </Project>
